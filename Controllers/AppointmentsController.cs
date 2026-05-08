@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MediCure.Data;
 using MediCure.Models;
+using MediCure.Services;
 
 namespace MediCure.Controllers
 {
@@ -10,10 +11,12 @@ namespace MediCure.Controllers
     public class AppointmentsController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly NoShowPredictionService _predictionService;
 
-        public AppointmentsController(AppDbContext context)
+        public AppointmentsController(AppDbContext context, NoShowPredictionService predictionService)
         {
             _context = context;
+            _predictionService = predictionService;
         }
 
         [HttpGet]
@@ -74,6 +77,26 @@ namespace MediCure.Controllers
             _context.Appointments.Remove(appointment);
             await _context.SaveChangesAsync();
             return NoContent();
+        }
+
+        [HttpPost("predict-noshow")]
+        public ActionResult PredictNoShow([FromBody] NoShowInputData input)
+        {
+            if (input.Age < 0 || input.Age > 120)
+                return BadRequest("Invalid age value.");
+
+            if (input.DaysInAdvance < 0)
+                return BadRequest("Days in advance cannot be negative.");
+
+            var result = _predictionService.Predict(input);
+
+            return Ok(new
+            {
+                willNoShow = result.WillNoShow,
+                noShowProbability = $"{result.NoShowProbability}%",
+                riskLevel = result.RiskLevel,
+                recommendation = result.Recommendation
+            });
         }
     }
 }

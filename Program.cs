@@ -1,5 +1,6 @@
 using MediCure.Data;
 using Microsoft.EntityFrameworkCore;
+using MediCure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+builder.Services.AddSingleton<NoShowPredictionService>();
 
 var app = builder.Build();
 
