@@ -4,3 +4,4 @@ obj/
 *.db-shm
 *.db-wal
 .env
+noshow_model.onnx
